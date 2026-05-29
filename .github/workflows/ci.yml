@@ -1,0 +1,71 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11', '3.12', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install package + dev deps
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+      - name: Ruff lint
+        run: ruff check src tests examples
+      - name: Mypy strict
+        run: mypy --strict src/apier
+      - name: Pytest with coverage gate
+        run: pytest --cov=src/apier --cov-report=term --cov-fail-under=90
+      - name: Build dist artifacts
+        run: python -m build
+      - name: Tarball + wheel surface secret-leak grep
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -d dist && ls -la dist/
+          rm -rf /tmp/audit && mkdir -p /tmp/audit
+          for archive in dist/*.tar.gz; do tar -xzf "$archive" -C /tmp/audit; done
+          for wheel in dist/*.whl; do unzip -q "$wheel" -d /tmp/audit; done
+          if grep -rEn 'apier_(test|live)_[A-Za-z0-9_-]{16,}|Bearer [A-Za-z0-9._-]{20,}|ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]+|pypi-[A-Za-z0-9_-]{20,}|eyJ[A-Za-z0-9._-]{20,}' /tmp/audit/; then
+            echo "::error::token-shaped string found in published surface"; exit 1
+          fi
+          echo "OK published surface clean"
+  assertion-positive-control:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+      - name: Example must exit non-zero on known-404 base URL
+        shell: bash
+        run: |
+          set -euo pipefail
+          if APIER_BASE_URL='https://www.apier.no/__nonexistent_path__' python examples/altinn_migration.py; then
+            echo "REGRESSION: example exited 0 on a known-404 URL — assertion is a no-op"; exit 1
+          else
+            echo "OK: example correctly exited non-zero on known-404"
+          fi
