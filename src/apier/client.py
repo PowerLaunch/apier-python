@@ -88,7 +88,7 @@ class Client:
     --------
     >>> c = Client()                                                # zero-auth
     >>> data = c.get("/api/v1/tools/altinn-migration")              # dict
-    >>> c2 = Client(api_key="apier_test_xxx")                       # Category B
+    >>> c2 = Client(api_key="apr_free_xxx")                         # Category B
     """
 
     def __init__(
