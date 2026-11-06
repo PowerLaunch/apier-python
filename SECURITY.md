@@ -17,7 +17,7 @@ This package is a thin synchronous HTTPS client over the Apier API. It does not 
 
 These sit at the host layer and are out of scope for the library:
 
-1. **Shell history.** Setting `APIER_API_KEY=apier_test_…` inline on the command line will record the key in your shell history. Prefer per-session `export` from a non-recorded file, or a secret manager.
+1. **Shell history.** Setting `APIER_API_KEY=apr_free_…` inline on the command line will record the key in your shell history. Prefer per-session `export` from a non-recorded file, or a secret manager.
 2. **CI logs.** If you echo `os.environ["APIER_API_KEY"]` from a script, the value will land in CI logs verbatim. The library never does that itself.
 3. **Local process inspection.** On multi-user systems, `ps eww` or equivalent can reveal environment variables to local users with sufficient privilege. The library runs in user space; it cannot defend against an attacker who already has user-level shell access on your machine.
 4. **HTTPS proxies that terminate TLS.** Corporate MITM proxies with locally trusted CAs will be accepted by the system default SSL context — that is the host operator's policy choice, not the library's. The library has no knob to opt out of the system CA store.

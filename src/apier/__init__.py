@@ -6,7 +6,7 @@ Public surface:
 
     from apier import Client, ApierError
     c = Client()                                    # zero-auth Category-A
-    c = Client(api_key="apier_test_...")            # Bearer-authenticated
+    c = Client(api_key="apr_free_...")              # Bearer-authenticated
 
     data = c.get("/api/v1/tools/altinn-migration")  # dict
 

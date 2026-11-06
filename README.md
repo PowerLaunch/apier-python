@@ -28,9 +28,11 @@ print(data["data"]["mappings"][0])
 For Category-B endpoints (company data, accounting filings, etc.) pass an API key:
 
 ```python
-client = Client(api_key="apier_test_...")           # explicit
+client = Client(api_key="apr_free_...")             # explicit
 client = Client()                                   # or APIER_API_KEY env
 ```
+
+The key goes out as `Authorization: Bearer <key>`. A real API key is `apr_<tier>_…` (`apr_free_`, `apr_starter_`, `apr_pro_` or `apr_ent_`); the first one is created when you first sign in after signing up, see https://www.apier.no/docs/authentication. No key of the older `apier_live_` / `apier_test_` shape was ever issued.
 
 Errors normalise to a structured `ApierError`:
 
